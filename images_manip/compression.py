@@ -1,5 +1,6 @@
 import base64
 import io
+import tempfile
 import zlib
 import bz2
 import gzip
@@ -35,7 +36,8 @@ class Compression:
         im_data_compressed = gzip.compress(im_data)
         return base64.b64encode(im_data_compressed)
 
-
-
-
-
+    def return_webp(self):
+        im = self.image
+        with tempfile.NamedTemporaryFile(suffix='.webp', delete=False) as temp:
+            im.save(temp, "webp")
+        return temp
