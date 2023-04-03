@@ -1,7 +1,7 @@
 import os
 import random
 import sys
-import openai
+from openai_integration.GPT3 import Bot
 from fastapi import FastAPI
 from fastapi.logger import logger
 from pydantic import BaseSettings
@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from images_manip.compression import Compression
 import webuiapi
 from PIL import Image
-
+from openai_integration.prompts import Prompts
 
 # Setting up ngrok
 class Settings(BaseSettings):
@@ -52,16 +52,23 @@ if settings.USE_NGROK:
 
 # setting up sd
 api = webuiapi.WebUIApi()
-api = webuiapi.WebUIApi(host='127.0.0.1', port=7860)
-api = webuiapi.WebUIApi(sampler='Euler a', steps=20)
+
+options = api.get_sd_models()
+#save options to file txt
+with open('options.txt', 'w') as f:
+    f.write(str(options))
+
+
 
 # loading api key
-openai.api_key = "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"
+key = os.environ["OPENAI_API_KEY"]
+bot = Bot(key)
+
 
 # models
 fish = 'xks_3200.ckpt [3bfc733a]'
-sd = '512-base-ema.ckpt [09dd2ae4]'
-
+#sd = '512-base-ema.ckpt [09dd2ae4]'
+sd = 'v1-5-pruned-emaonly.ckpt [cc6cb27103]'
 
 # api endpoints
 
@@ -89,6 +96,9 @@ async def root():
 #     return FileResponse(temp_file.name, media_type="image/webp")
 
 
+
+#generic stuff for testing
+
 @app.get("/gen-image/{prompt}/{steps}")
 async def gen_image(prompt: str, steps: int):
     options = {}
@@ -105,7 +115,7 @@ async def gen_image(prompt: str, steps: int):
 
 
 @app.get("/gen-fish/fish/{steps}")
-async def gen_image(steps: int):
+async def gen_fish(steps: int):
 
     fish_num = str(random.randint(1, 32))
     options = {}
@@ -140,14 +150,29 @@ async def gen_image(steps: int):
 
 
 @app.get("/gpt3/{prompt}")
-async def gpt3_prompt(prompt: str):
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=prompt,
-        temperature=0.7,
-        max_tokens=256,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
-    )
-    return response
+async def gpt3_prompt(system: str, message: str):
+    return bot.generate(system,message)
+
+#ai rpg stuff
+
+ai_prompt = Prompts()
+@app.get("/gen-rpg/map/{steps}")
+async def gen_map(steps: int):
+
+    map_num = str(random.randint(1, 2))
+    options = {}
+    options['sd_model_checkpoint'] = sd
+    api.set_options(options)
+    im = Image.open('maps_for_analysis/' + map_num + '.png')
+
+
+    prompt = bot.generate(str(ai_prompt.map_prompt))
+
+    results = api.img2img(images=[im], prompt=prompt, cfg_scale=7, denoising_strength=0.7)
+
+    print(prompt)
+
+    test = Compression(results.image)
+    temp_file = test.return_webp()
+    return FileResponse(temp_file.name, media_type="image/webp")
+
