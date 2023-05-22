@@ -15,3 +15,14 @@ class Bot:
         )
         content = response['choices'][0]['message']['content']
         return content
+
+    def talk(self, system: str, message: str):
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": message},
+            ]
+        )
+        content = response['choices'][0]['message']['content']
+        return content

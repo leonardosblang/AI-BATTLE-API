@@ -40,4 +40,5 @@ class Compression:
         im = self.image
         with tempfile.NamedTemporaryFile(suffix='.webp', delete=False) as temp:
             im.save(temp, "webp")
-        return temp
+            temp_path = temp.name  # Save the path before closing the file
+        return temp_path
