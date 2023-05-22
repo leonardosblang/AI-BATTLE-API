@@ -24,9 +24,11 @@ image_processor = ImageProcessor(api_manager, bot_manager, s3_manager)
 async def root():
     return {"message": "Hello World"}
 
+
 @app.get("/models")
 async def root():
     return api_manager.return_model()
+
 
 @app.get("/gen-image/{prompt}/{steps}")
 async def gen_image(prompt: str, steps: int):
@@ -51,3 +53,30 @@ async def gen_map(steps: int):
 @app.get("/gen-image/{prompt}/{steps}/s3")
 async def gen_image_s3(prompt: str, steps: int):
     return image_processor.generate_image_s3(prompt, steps)
+
+
+@app.post("/generate_game_images")
+async def generate_game_images(user: str,  num_classes: int, num_monsters: int, num_backgrounds: int,
+                               num_cards: int):
+
+    steps = 20
+    theme = bot_manager.generate_theme()
+
+    player_class_prompts = bot_manager.generate_player_classes(theme, num_classes)
+    player_class_images = image_processor.generate_images_s3(player_class_prompts, steps, user, "class")
+
+    monster_prompts = bot_manager.generate_monsters(theme, num_monsters)
+    monster_images = image_processor.generate_images_s3(monster_prompts, steps, user, "monster")
+
+    background_prompts = bot_manager.generate_backgrounds(theme, num_backgrounds)
+    background_images = image_processor.generate_images_s3(background_prompts, steps, user, "background")
+
+    card_prompts = bot_manager.generate_cards(player_class_prompts[0], num_cards)
+    card_images = image_processor.generate_images_s3(card_prompts, steps, user, "card")
+
+    return {
+        "player_class_images": player_class_images,
+        "monster_images": monster_images,
+        "background_images": background_images,
+        "card_images": card_images,
+    }

@@ -72,21 +72,29 @@ class ImageProcessor:
         temp_file = test.return_webp()
         return FileResponse(temp_file, media_type="image/webp")
 
-    def generate_image_s3(self, prompt, steps):
+    def generate_image_s3(self, prompt, steps, user, image_type, number):
         options = {}
         options['sd_model_checkpoint'] = self.sd
         self.api_manager.set_options(options)
         results = self.api_manager.txt2img(prompt=prompt,
-                          cfg_scale=7,
-                          steps=steps,
-                          )
+                                           cfg_scale=7,
+                                           steps=steps,
+                                           )
 
         test = Compression(results.image)
         temp_file_path = test.return_webp()  # Assuming this returns a file path now
-        object_name = f"{prompt}.webp"
+        object_name = f"{user}_{image_type}{number}.webp"
 
         # Reopen the file before uploading
         with open(temp_file_path, 'rb') as temp_file:
             self.s3_manager.upload_image_to_s3(temp_file, object_name)
 
         return FileResponse(temp_file_path, media_type="image/webp")
+
+    def generate_images_s3(self, prompts, steps, user, image_type):
+        images = []
+        for i, prompt in enumerate(prompts):
+            print(f"Generating {image_type} image {i + 1} with prompt: {prompt}")
+            image = self.generate_image_s3(prompt, steps, user, image_type, i + 1)
+            images.append(image)
+        return images

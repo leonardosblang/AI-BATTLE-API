@@ -14,3 +14,18 @@ class BotManager:
 
     def generate(self, prompt):
         return self.bot.generate(str(prompt))
+
+    def generate_theme(self):
+        return self.bot.generate_theme()
+
+    def generate_player_classes(self, theme, num_classes):
+        return self.bot.generate_player_classes(theme, num_classes)
+
+    def generate_monsters(self, theme, num_monsters):
+        return self.bot.generate_monsters(theme, num_monsters)
+
+    def generate_backgrounds(self, theme, num_backgrounds):
+        return self.bot.generate_backgrounds(theme, num_backgrounds)
+
+    def generate_cards(self, player_class, num_cards):
+        return self.bot.generate_cards(player_class, num_cards)
