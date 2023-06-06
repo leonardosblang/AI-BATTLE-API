@@ -5,7 +5,7 @@ from image_processing.image_processor import ImageProcessor
 from bot_management.bot_manager import BotManager
 from storage.s3 import S3Manager
 from webui_integration.api_manager import APIManager
-
+from database.mongo_connect import MongoDB
 app = FastAPI()
 
 # Initialize classes
@@ -59,6 +59,17 @@ async def gen_image_s3(prompt: str, steps: int):
 async def generate_game_images(user: str,  num_classes: int, num_monsters: int, num_backgrounds: int,
                                num_cards: int):
 
+    db = MongoDB()
+    user_doc = {
+        "username": user,
+        "experience": 0,
+        "level": 0,
+        "current_equips": [],
+        "shop_equips": [],
+        "deck": [],
+        "current_class": "none"
+    }
+    db.insert_into_collection("users", user_doc)
     steps = 20
     theme = bot_manager.generate_theme()
     print(theme)
@@ -71,7 +82,7 @@ async def generate_game_images(user: str,  num_classes: int, num_monsters: int, 
     background_prompts = bot_manager.generate_backgrounds(theme, num_backgrounds)
     background_images = image_processor.generate_images_s3(background_prompts, steps, user, "background")
 
-    card_prompts = bot_manager.generate_cards(player_class_prompts[0], num_cards)
+    card_prompts = bot_manager.generate_cards(player_class_prompts[0], num_cards, user)
     card_images = image_processor.generate_images_s3(card_prompts, steps, user, "card")
 
     return {

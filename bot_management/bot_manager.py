@@ -27,5 +27,5 @@ class BotManager:
     def generate_backgrounds(self, theme, num_backgrounds):
         return self.bot.generate_backgrounds(theme, num_backgrounds)
 
-    def generate_cards(self, player_class, num_cards):
-        return self.bot.generate_cards(player_class, num_cards)
+    def generate_cards(self, player_class, num_cards,usernam):
+        return self.bot.generate_cards(player_class, num_cards,usernam)

@@ -8,7 +8,7 @@ class MongoDB:
         if connection_string is None:
             raise Exception("MONGO_CONN_STR is not set in the environment variables")
         self.client = MongoClient(connection_string)
-        self.db = self.client.get_default_database()
+        self.db = self.client['test']
 
     def insert_into_collection(self, collection_name, data):
         collection = self.db[collection_name]

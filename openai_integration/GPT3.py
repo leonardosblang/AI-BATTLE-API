@@ -1,5 +1,9 @@
+import json
+
 import openai
 
+from database.mongo_connect import MongoDB
+from openai_integration.prompts import Prompts
 
 class Bot:
     def __init__(self, api_key: str):
@@ -27,6 +31,8 @@ class Bot:
         content = response['choices'][0]['message']['content']
         return content
 
+
+
     def generate_theme(self):
         return self.generate("Give me a theme for a game. Need to be two words at max ONLY. example: fantasy future. example: futuristic apocalypse. example: magical world. example: lava world. example: ice land. NO NEED FOR , HERE. GIVE ONLY TWO WORDS AT MAX AND NOTHING ELSE")
 
@@ -45,7 +51,28 @@ class Bot:
             f"Generate {num_backgrounds} prompts for backgrounds in a {theme} game. EXAMPLE: forest, 4k, masterpiece, trending on artstation/forest, 4k, masterpiece, trending on artstation")
         return prompt.split('/')
 
-    def generate_cards(self, player_class, num_cards):
+    def generate_cards(self, player_class, num_cards,username):
+        db = MongoDB()
+        users = db.db['users']
         prompt = self.generate(
             f"Generate {num_cards} prompts for cards for the player class {player_class} in a game. DO NOT SPECIFY ITS A CARD IN THE PROMPTS. FOR THIS CASE, GENERATE TWO WORDS AT MOST NO NEED TO USE , HERE, ONLY TWO WORDS AT MOST. DON'T FORGET TO SEPARATE WITTH A /. EXAMPLE: ice sword/ice shield/frost ball")
+        card_info = Prompts().card_prompt
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system",
+                 "content": card_info},
+                {"role": "user", "content": prompt},
+            ]
+        )
+        content = response['choices'][0]['message']['content']
+        print("Generated prompt: ", prompt)
+        content_json = json.loads(content)
+        print("Generated content: ", content_json)
+        users.update_one(
+            {"username": username},
+            {"$push": {"deck": {"$each": content_json["cards"]}}}
+        )
+
         return prompt.split('/')
+
