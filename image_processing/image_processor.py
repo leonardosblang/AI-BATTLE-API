@@ -9,7 +9,7 @@ class ImageProcessor:
         self.bot_manager = bot_manager
         self.s3_manager = s3_manager
         self.fish = 'xks_3200.ckpt [3bfc733a]'
-        self.sd = '512-base-ema.ckpt [d635794c1f]'
+        self.sd = 'anything-v4.5.ckpt [fbcf965a62]'
 
     def generate_image(self, prompt, steps):
         options = {}

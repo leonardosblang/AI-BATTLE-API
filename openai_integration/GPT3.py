@@ -28,11 +28,11 @@ class Bot:
         return content
 
     def generate_theme(self):
-        return self.generate("Give me a theme for a game")
+        return self.generate("Give me a theme for a game. Need to be two words at max ONLY. example: fantasy future. example: futuristic apocalypse. example: magical world. example: lava world. example: ice land. NO NEED FOR , HERE. GIVE ONLY TWO WORDS AT MAX AND NOTHING ELSE")
 
     def generate_player_classes(self, theme, num_classes):
         prompt = self.generate(
-            f"Generate {num_classes} prompts for player classes in a {theme} game.Each subsequent class being an evolution of the previous one. EXAMPLE: grey knight, 4k, masterpiece, trending on artstation/fire knight, 4k, glowing red sword, badass, masterpice, trending on artstation")
+            f"Generate {num_classes} prompts for player classes in a {theme} game.Each subsequent class being an evolution of the previous one. TRY TO INCLUDE A ELEMENT IN THE CLASS SUCH AS LIGHTING, FIRE, ICE, VOID, GREY MATTER, POISON, ETC. EXAMPLE: grey knight, 4k, masterpiece, trending on artstation/fire knight, 4k, glowing red sword, badass, masterpice, trending on artstation")
         return prompt.split('/')
 
     def generate_monsters(self, theme, num_monsters):
@@ -47,5 +47,5 @@ class Bot:
 
     def generate_cards(self, player_class, num_cards):
         prompt = self.generate(
-            f"Generate {num_cards} prompts for cards for the player class {player_class} in a game. DO NOT SPECIFY ITS A CARD IN THE PROMPTS. EXAMPLE: ICE SPEAR,4K,MASTERPIECE,TRENDING ON ARTSTATION/ICE SWORD,4K,MASTERPIECE,TRENDING ON ARTSTATION")
+            f"Generate {num_cards} prompts for cards for the player class {player_class} in a game. DO NOT SPECIFY ITS A CARD IN THE PROMPTS. FOR THIS CASE, GENERATE TWO WORDS AT MOST NO NEED TO USE , HERE, ONLY TWO WORDS AT MOST. DON'T FORGET TO SEPARATE WITTH A /. EXAMPLE: ice sword/ice shield/frost ball")
         return prompt.split('/')

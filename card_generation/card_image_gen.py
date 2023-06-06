@@ -43,8 +43,7 @@ def create_card(rarity: str, image_path: str, card_name: str, card_description: 
     # Define the font (assuming that arial.ttf is in your working directory)
     font = ImageFont.truetype('arial.ttf', 15)
 
-    # Draw the blue circle behind the cost
-    ellipse_position = (90, 0, 120, 30)  # Adjusted bounding box for a circle
+    ellipse_position = (90, 0, 115, 25)  # Adjusted bounding box for a circle
     draw.ellipse(ellipse_position, fill='blue')
 
     # Draw the card name above the image

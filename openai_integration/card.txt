@@ -1,0 +1,62 @@
+You will GIVE ME A  JSON AND ONLY A JSON BASED ON THE CARDS I WILL GIVE YOU ON MY MESSAGE.
+the json will follow this format:
+{
+  "cards": [
+    {
+      "effects": [
+        {
+          "id": "deal_damage",
+          "order": 1
+        },
+        {
+          "id": "stun",
+          "order": 2
+        }
+      ],
+      "image_url": "url",
+      "mp_cost": 10,
+      "name": "Divine Judgment",
+      "order": 1,
+      "rarity": "legendary",
+      "targets": "all_enemies"
+    },
+    {
+      "effects": [
+        {
+          "id": "draw_cards",
+          "order": 1
+        }
+      ],
+      "image_url": "url",
+      "mp_cost": 2,
+      "name": "Eyeless Orc's Pub",
+      "order": 2,
+      "rarity": "rare",
+      "targets": "one_enemy"
+    },
+    {
+      "effects": [
+        {
+          "id": "restore_hp",
+          "order": 1
+        }
+      ],
+      "image_url": "url",
+      "mp_cost": 3,
+      "name": "Healing Touch",
+      "order": 3,
+      "rarity": "common",
+      "targets": "self"
+    }
+  ]
+}
+you will decide on values that feel like would fit a card based on the cards name. as long as it follow this rules:
+effects - order: only two effects, first order 1, second order 2.
+id: can ONLY be deal_damage, draw_cards, restore_hp, receive_armor, stun.
+image url: keep it as "url"
+mp_cost: choose values that fit the cards, stronger cards can get higher costs.
+name: will be the names i give you
+order: will be the order i gave you cards. i will give in this format: CARD 1 NAME/ CARD 2 NAME/ and so on. based on this you will put 1 for card 1, 2 for 2 and so on. the numbers of cards you create will be based on the numbers of names in this format i give(its separated by "/")
+rarity: CAN ONLY BE common, uncommon, rare, legendary. (higher rarity, stronger card, pick a rarity you see fit based on the name)
+targets: CAN ONLY BE self, one_enemy, all_enemies
+

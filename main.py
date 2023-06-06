@@ -61,7 +61,7 @@ async def generate_game_images(user: str,  num_classes: int, num_monsters: int, 
 
     steps = 20
     theme = bot_manager.generate_theme()
-
+    print(theme)
     player_class_prompts = bot_manager.generate_player_classes(theme, num_classes)
     player_class_images = image_processor.generate_images_s3(player_class_prompts, steps, user, "class")
 
