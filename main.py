@@ -6,6 +6,8 @@ from bot_management.bot_manager import BotManager
 from storage.s3 import S3Manager
 from webui_integration.api_manager import APIManager
 from database.mongo_connect import MongoDB
+from card_generation.card_image_gen import CardCreator
+
 app = FastAPI()
 
 # Initialize classes
@@ -56,9 +58,8 @@ async def gen_image_s3(prompt: str, steps: int):
 
 
 @app.post("/generate_game_images")
-async def generate_game_images(user: str,  num_classes: int, num_monsters: int, num_backgrounds: int,
+async def generate_game_images(user: str, num_classes: int, num_monsters: int, num_backgrounds: int,
                                num_cards: int):
-
     db = MongoDB()
     user_doc = {
         "username": user,
@@ -84,6 +85,47 @@ async def generate_game_images(user: str,  num_classes: int, num_monsters: int, 
 
     card_prompts = bot_manager.generate_cards(player_class_prompts[0], num_cards, user)
     card_images = image_processor.generate_images_s3(card_prompts, steps, user, "card")
+
+    user_doc = db.find_in_collection("users", {"username": user})[0]  # Assuming usernames are unique
+    deck = user_doc["deck"]  # Fetch the deck of the user
+
+    for i, card in enumerate(deck):
+
+
+            card_image_object_name = user + "_" + "card" + str(i+1) + ".webp"
+            print(card_image_object_name)
+            temp_file_path = s3_manager.download_image_from_s3(card_image_object_name, user, i+1)
+
+            if not temp_file_path:  # Check if a valid file path is returned
+                print(f"Error downloading image for card {i+1}")
+                continue  # Skip this iteration if image download failed
+
+            # First, check that the card has at least two effects. If it doesn't, use a default value.
+            if len(card["effects"]) >= 2:
+                main_effect_id = card["effects"][0]["id"]
+                target_effect_id = card["effects"][1]["id"]
+            else:
+                main_effect_id = card["effects"][0]["id"]
+                target_effect_id = ""
+
+            card_creator = CardCreator(card["rarity"], temp_file_path, card["name"], main_effect_id, target_effect_id,
+                                       str(card["mp_cost"]))
+
+            card_creator.create_card()
+
+            # Upload the generated card back to S3
+            new_card_image_object_name = f"{user}_fullcard{i + 1}"
+            with open("./card_generation/card.png", "rb") as full_card_image_file:
+                new_image_url = s3_manager.upload_image_to_s3(full_card_image_file, new_card_image_object_name)
+
+            # Now 'new_image_url' contains the presigned url
+            # Update MongoDB with the URL. Assuming the card's id is stored in card["_id"]
+            # Update MongoDB with the URL. Using combination of card's name and order as identifier
+            db.update_in_collection("users",
+                                    {"username": user,
+                                     "deck.name": card["name"],
+                                     "deck.order": card["order"]},
+                                    {"$set": {"deck.$.image_url": new_image_url}})
 
     return {
         "player_class_images": player_class_images,
