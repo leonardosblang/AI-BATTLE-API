@@ -59,7 +59,7 @@ async def gen_image_s3(prompt: str, steps: int):
 
 @app.post("/generate_game_images")
 async def generate_game_images(user: str, num_classes: int, num_monsters: int, num_backgrounds: int,
-                               num_cards: int):
+                               num_cards: int, num_items: int):
     db = MongoDB()
     user_doc = {
         "username": user,
@@ -147,9 +147,38 @@ async def generate_game_images(user: str, num_classes: int, num_monsters: int, n
                                      "deck.order": card["order"]},
                                     {"$set": {"deck.$.image_url": new_image_url}})
 
+    item_prompts = bot_manager.generate_items(theme, num_items, user)
+    item_images = image_processor.generate_images_s3(item_prompts, steps, user, "item")
+
+    user_doc = db.find_in_collection("users", {"username": user})[0]  # Assuming usernames are unique
+    shop_equips = user_doc["shop_equips"]  # Fetch the shop items of the user
+
+    for i, item in enumerate(shop_equips):
+        item_image_object_name = user + "_" + "item" + str(i + 1) + ".webp"
+        print(item_image_object_name)
+        temp_file_path = s3_manager.download_image_from_s3(item_image_object_name, user, i + 1)
+
+        if not temp_file_path:  # Check if a valid file path is returned
+            print(f"Error downloading image for item {i + 1}")
+            continue  # Skip this iteration if image download failed
+
+        # Upload the downloaded image back to S3 (In this case, it should be the same image)
+        new_item_image_object_name = f"{user}_item{i + 1}"
+        with open(temp_file_path, "rb") as item_image_file:
+            new_image_url = s3_manager.upload_image_to_s3(item_image_file, new_item_image_object_name)
+
+        # Now 'new_image_url' contains the presigned url
+        # Update MongoDB with the URL. Using combination of item's name and order as identifier
+        db.update_in_collection("users",
+                                {"username": user,
+                                 "shop_equips.name": item["name"],
+                                 "shop_equips.order": item["order"]},
+                                {"$set": {"shop_equips.$.url": new_image_url}})
+
     return {
         "player_class_images": player_class_images,
         "monster_images": monster_images,
         "background_images": background_images,
         "card_images": card_images,
+        "item_images": item_images
     }

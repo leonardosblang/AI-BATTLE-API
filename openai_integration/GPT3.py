@@ -76,3 +76,30 @@ class Bot:
 
         return prompt.split('/')
 
+    def generate_items(self, theme, num_items, username):
+        db = MongoDB()
+        users = db.db['users']
+        prompt = self.generate(
+            f"Generate {num_items} prompts for items for the game theme {theme}. DO NOT SPECIFY IT'S AN ITEM IN THE PROMPTS. FOR THIS CASE, GENERATE TWO WORDS AT MOST. NO NEED TO USE , HERE, ONLY TWO WORDS AT MOST. DON'T FORGET TO SEPARATE WITH A /. EXAMPLE: ice sword/burning potion/eletric armor")
+        item_info = Prompts().item_prompt
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system",
+                 "content": item_info},
+                {"role": "user", "content": prompt},
+            ]
+        )
+        content = response['choices'][0]['message']['content']
+        print("Generated prompt: ", prompt)
+        print("Generated content: ", content)
+        content_json = json.loads(content)
+        print("Generated content: ", content_json)
+        users.update_one(
+            {"username": username},
+            {"$push": {"shop_equips": {"$each": content_json["items"]}}}
+        )
+
+        return prompt.split('/')
+
+

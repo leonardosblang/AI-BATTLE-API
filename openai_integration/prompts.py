@@ -4,4 +4,6 @@ class Prompts:
         # read card.txt and set it to self.card_prompt
         with open('openai_integration/card.txt', 'r') as file:
             self.card_prompt = file.read().replace('\n', '')
-            
+
+        with open('openai_integration/item.txt', 'r') as file:
+            self.item_prompt = file.read().replace('\n', '')

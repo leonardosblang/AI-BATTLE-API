@@ -29,3 +29,6 @@ class BotManager:
 
     def generate_cards(self, player_class, num_cards,usernam):
         return self.bot.generate_cards(player_class, num_cards,usernam)
+
+    def generate_items(self, theme, num_items, usernam):
+        return self.bot.generate_items(theme, num_items, usernam)
