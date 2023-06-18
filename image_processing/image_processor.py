@@ -3,6 +3,7 @@ import random
 from .compression import Compression
 from fastapi.responses import FileResponse
 
+
 class ImageProcessor:
     def __init__(self, api_manager, bot_manager, s3_manager):
         self.api_manager = api_manager
@@ -29,12 +30,12 @@ class ImageProcessor:
         options = {}
         options['sd_model_checkpoint'] = self.fish
         self.api_manager.set_options(options)
-        im = Image.open('images_for_analysis/'+fish_num+'.png')
+        im = Image.open('images_for_analysis/' + fish_num + '.png')
         results = self.api_manager.img2img(images=[im],
-                          prompt="xks, sksksk artstyle",
-                          cfg_scale=7,
-                          steps=steps,
-                          )
+                                           prompt="xks, sksksk artstyle",
+                                           cfg_scale=7,
+                                           steps=steps,
+                                           )
 
         im = results.image.convert("RGBA")
 
@@ -86,10 +87,16 @@ class ImageProcessor:
         object_name = f"{user}_{image_type}{number}.webp"
 
         # Reopen the file before uploading
-        with open(temp_file_path, 'rb') as temp_file:
-            self.s3_manager.upload_image_to_s3(temp_file, object_name)
+        #   with open(temp_file_path, 'rb') as temp_file:
+        #      self.s3_manager.upload_image_to_s3(temp_file, object_name)
+        # return FileResponse(temp_file_path, media_type="image/webp")
 
-        return FileResponse(temp_file_path, media_type="image/webp")
+        with open(temp_file_path, 'rb') as temp_file:
+            presigned_url = self.s3_manager.upload_image_to_s3(temp_file, object_name)
+
+
+
+        return presigned_url
 
     def generate_images_s3(self, prompts, steps, user, image_type):
         images = []

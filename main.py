@@ -63,11 +63,15 @@ async def generate_game_images(user: str, num_classes: int, num_monsters: int, n
     db = MongoDB()
     user_doc = {
         "username": user,
+        "gold": 0,
+        "classes": [],
         "experience": 0,
         "level": 0,
         "current_equips": [],
         "shop_equips": [],
         "deck": [],
+        "monsters": [],
+        "backgrounds": [],
         "current_class": "none"
     }
     db.insert_into_collection("users", user_doc)
@@ -80,8 +84,24 @@ async def generate_game_images(user: str, num_classes: int, num_monsters: int, n
     monster_prompts = bot_manager.generate_monsters(theme, num_monsters)
     monster_images = image_processor.generate_images_s3(monster_prompts, steps, user, "monster")
 
+    for i, image_url in enumerate(monster_images):
+        monster_name = f"monster{i + 1}"  # generate the monster name
+        monster_dict = {monster_name: image_url}  # create a dict with monster name and its url
+        db.update_in_collection("users",
+                                {"username": user},
+                                {"$push": {
+                                    "monsters": monster_dict}})  # push this dict to the 'monsters' array in the user document
+
     background_prompts = bot_manager.generate_backgrounds(theme, num_backgrounds)
     background_images = image_processor.generate_images_s3(background_prompts, steps, user, "background")
+
+    for i, image_url in enumerate(background_images):
+        background_name = f"background{i + 1}"  # generate the background name
+        background_dict = {background_name: image_url}  # create a dict with background name and its url
+        db.update_in_collection("users",
+                                {"username": user},
+                                {"$push": {
+                                    "backgrounds": background_dict}})  # push this dict to the 'backgrounds' array in the user document
 
     card_prompts = bot_manager.generate_cards(player_class_prompts[0], num_cards, user)
     card_images = image_processor.generate_images_s3(card_prompts, steps, user, "card")
