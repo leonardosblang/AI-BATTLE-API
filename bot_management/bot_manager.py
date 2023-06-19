@@ -32,3 +32,5 @@ class BotManager:
 
     def generate_items(self, theme, num_items, usernam):
         return self.bot.generate_items(theme, num_items, usernam)
+    def generate_map(self, theme):
+        return self.bot.generate_map(theme)

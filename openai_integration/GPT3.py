@@ -51,6 +51,11 @@ class Bot:
             f"Generate {num_backgrounds} prompts for backgrounds in a {theme} game. EXAMPLE: forest, 4k, masterpiece, trending on artstation/forest, 4k, masterpiece, trending on artstation")
         return prompt.split('/')
 
+    def generate_map(self, theme):
+        prompt = self.generate(
+            f"Generate a prompt for a map in a {theme} game. EXAMPLE: map of forest, 4k, masterpiece, trending on artstation. GENERATE ONLY ONE. NO NEED FOR MORE")
+        return prompt.split('/')
+
     def generate_cards(self, player_class, num_cards,username):
         db = MongoDB()
         users = db.db['users']

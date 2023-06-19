@@ -72,7 +72,8 @@ async def generate_game_images(user: str, num_classes: int, num_monsters: int, n
         "deck": [],
         "monsters": [],
         "backgrounds": [],
-        "current_class": "none"
+        "current_class": "none",
+        "map_url": "url"
     }
     db.insert_into_collection("users", user_doc)
     steps = 20
@@ -83,6 +84,16 @@ async def generate_game_images(user: str, num_classes: int, num_monsters: int, n
 
     monster_prompts = bot_manager.generate_monsters(theme, num_monsters)
     monster_images = image_processor.generate_images_s3(monster_prompts, steps, user, "monster")
+
+    player_map_prompts = bot_manager.generate_map(theme)
+    player_map_images = image_processor.generate_images_s3(player_map_prompts, steps, user, "map")
+
+    #save map url to user doc
+    db.update_in_collection("users",
+                            {"username": user},
+                            {"$set": {
+                                "map_url": player_map_images[0]}})
+
 
     for i, image_url in enumerate(monster_images):
         monster_name = f"monster{i + 1}"  # generate the monster name
@@ -180,5 +191,6 @@ async def generate_game_images(user: str, num_classes: int, num_monsters: int, n
         "monster_images": monster_images,
         "background_images": background_images,
         "card_images": card_images,
-        "item_images": item_images
+        "item_images": item_images,
+        "player_map_images": player_map_images
     }
